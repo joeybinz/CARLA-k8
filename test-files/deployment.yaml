@@ -1,0 +1,42 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: carla-test
+  name: carla-test
+  labels:
+    app: carla
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: carla-test
+  template:
+    metadata:
+      labels:
+        app: carla-test
+    spec:
+      imagePullSecrets:
+        - name: rcd-reg-cred
+      containers:
+      - name: carla
+        image: carlasim/carla:0.9.14
+        command:
+        - /bin/bash
+        - ./CarlaUE4.sh
+        - -RenderOffScreen
+        ports:
+        - containerPort: 2000
+        - containerPort: 2002
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      - name: py
+        image: registry.rcd.clemson.edu/dndawso/vipergs-carla-test/python-test:latest
+        imagePullPolicy: Always
+        #command:
+        #- sleep
+        #- infinity
+      - name: nginx-rtmp
+        image: tiangolo/nginx-rtmp:latest-2023-05-01
+        ports:
+        - containerPort: 1935
